@@ -3,6 +3,7 @@ import usersRoute from "./routes/users.routes"
 
 // import { run } from './services/database.services'
 import databaseService from "./services/database.services"
+import { defaultErrorHandler } from "./middlewares/error.middlewares"
 databaseService.connect()
 
 const app = express()
@@ -66,10 +67,15 @@ app.use("/users", usersRoute)
 //localhost:3000/api log ra thời gian trong terminal
 //
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.log("Error Handler nè")
-  res.status(400).json({ message: err.message })
-})
+// app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+//   console.log("Error Handler nè")
+//   // res.status(400).json({ message: err.message })
+//   //không được ném 400
+//   res.status(err.status).json({ message: err.message })
+// })
+
+//chạy anh quản lí lỗi
+app.use(defaultErrorHandler)
 
 //!thằng này sẽ nằm cuối ứng dụng
 app.listen(PORT, () => {

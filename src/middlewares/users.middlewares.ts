@@ -18,6 +18,7 @@
 ///import các interface để định dạng kiểu cho para của middlewares
 import { Request, Response, NextFunction } from "express"
 import { checkSchema } from "express-validator"
+import { ErrorWithStatus } from "~/models/Errors"
 import usersService from "~/services/users.services"
 import { validate } from "~/utils/validation"
 
@@ -69,6 +70,10 @@ export const registerValidator = validate(
           const isExist = await usersService.checkEmailExist(value)
           if (isExist) {
             throw new Error("Email already exists")
+            // throw new ErrorWithStatus({
+            //   message: "Email already exist",
+            //   status: 401
+            // })
           }
           return true
         }

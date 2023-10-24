@@ -79,7 +79,7 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
 
   //!ta bọc lại bằng try-catch vì quá trình này hay phát sinh lỗi (rớt mạng)
 
-  throw new Error("Tạo thử một cái lỗi nè")
+  // throw new Error("Tạo thử một cái lỗi nè")
 
   //ta giả bộ với email và password này đã ngon và không cần middleware nữa
   //insertOne: hàm của mongo, là một promise trả ra dữ liệu

@@ -3,7 +3,7 @@ import { body, validationResult, ValidationChain } from "express-validator"
 
 //import chay
 import { RunnableValidationChains } from "express-validator/src/middlewares/schema"
-import { ErrorWithStatus } from "~/models/Errors"
+import { EntityError, ErrorWithStatus } from "~/models/Errors"
 
 // can be reused by many routes
 
@@ -25,6 +25,8 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
     }
 
     const errorObject = errors.mapped()
+    const entityError = new EntityError({ errors: {} }) //entityError dùng để thay thế errorObject
+
     //xử lí errorObject
     for (const key in errorObject) {
       //lấy msg của từng lỗi ra
@@ -33,13 +35,17 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
       if (msg instanceof ErrorWithStatus && msg.status !== 422) {
         return next(msg)
       }
+
+      //!ta lưu các lỗi 422 từ errorObject qua entityError
+      //mỗi lần đi qua cái key của errorObject, ta sao chép key, kèm message
+      entityError.errors[key] = msg
     }
 
     //lỗi với map khác gì mapped :)
     // res.status(400).json({ errors: errors.mapped() })
 
     //ta đổi 400 thành lỗi 422m ở đây xử lí lỗi luôn chứ không ném về ErrorHandler tổng
-    res.status(422).json({ errors: errorObject })
-    //
+    // res.status(422).json({ errors: errorObject })
+    next(entityError)
   }
 }

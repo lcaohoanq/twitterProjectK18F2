@@ -61,40 +61,12 @@ body:{
 // usersRoute.post("/register", registerValidator, registerController)
 
 //ta tạm thời cất hàm registerController để demo cách thức hoạt động của Request Handler
-usersRoute.post(
-  "/register",
-  registerValidator,
-  (req, res, next) => {
-    console.log("request handler 1")
-    next()
-  },
-  (req, res, next) => {
-    console.log("request handler 2")
-    // next(new Error("Error from request handler 2"))
-    //nếu ta next ra một cái lỗi như này thì lỗi sẽ chạy đến tầng ErrorHandler gần nhất kế tiếp
-    //ở trường hợp này ta không có một errorHandler nào cả
-    //tức là không có ai chụp lỗi này, nên nó bị bung ra màn hình
+usersRoute.post("/register", registerValidator, registerController)
 
-    //?thay vì dùng new Error ta có thể dùng throw
-    throw new Error("Error from request handler 2")
-    //!try-catch có một nhược điểm, sẽ không bắt lỗi được trong môi trường bất đồng bộ (async)
+//!khi gặp lỗi ta không được throw ra, phải dồn tất cả lỗi về Error Handler
+//bổ sung next cho hàm đó
+//nếu hàm đó là async ta sẽ xài try-catch cho async (next(error))
 
-    //TODO: hàm bình thường       next, throw
-    //TODO: hàm async             next, throw là bị lỗi (khác phục bằng try-catch Promise)
-  },
-  (req, res, next) => {
-    console.log("request handler 3")
-    next()
-  },
-  (req, res, next) => {
-    console.log("request handler 4")
-    res.json({ message: "register successfully" })
-  },
-  //*ta sẽ ném cái lỗi xuống tầng dưới thay vì sử dụng try catch
-  (err, req, res, next) => {
-    console.log("Error handler nè")
-    res.status(400).json({ message: err.message })
-  }
-)
+//ta sẽ đặt hàm xử lí lỗi này ở trên app tổng, đảm bảo tính reuse của nó cho toàn hệ thống
 
 export default usersRoute

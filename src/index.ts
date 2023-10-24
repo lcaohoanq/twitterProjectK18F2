@@ -66,6 +66,12 @@ app.use("/users", usersRoute)
 //localhost:3000/api log ra thời gian trong terminal
 //
 
+app.use((err, req, res, next) => {
+  console.log("Error Handler nè")
+  res.status(400).json({ message: err.message })
+})
+
+//!thằng này sẽ nằm cuối ứng dụng
 app.listen(PORT, () => {
   console.log(`Server đang chạy trên PORT ${PORT}`)
 })

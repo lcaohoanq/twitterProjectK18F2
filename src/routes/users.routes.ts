@@ -2,6 +2,7 @@ import express from "express"
 import { loginValidator, registerValidator } from "~/middlewares/users.middlewares"
 import { loginController } from "~/controllers/users.controllers"
 import { registerController } from "~/controllers/users.controllers"
+import { wrapAsync } from "~/utils/handlers"
 
 const usersRoute = express.Router()
 
@@ -61,7 +62,7 @@ body:{
 // usersRoute.post("/register", registerValidator, registerController)
 
 //ta tạm thời cất hàm registerController để demo cách thức hoạt động của Request Handler
-usersRoute.post("/register", registerValidator, registerController)
+usersRoute.post("/register", registerValidator, wrapAsync(registerController))
 
 //!khi gặp lỗi ta không được throw ra, phải dồn tất cả lỗi về Error Handler
 //bổ sung next cho hàm đó

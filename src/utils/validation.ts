@@ -23,6 +23,7 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
       //không có lỗi thì sẽ đi tiếp đến controller
     }
 
+    //lỗi với map khác gì mapped :)
     res.status(400).json({ errors: errors.mapped() })
   }
 }

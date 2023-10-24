@@ -1,6 +1,6 @@
 ///ta bị bug vì implment interface của FectchAPI nhưng ta lại muốn sử dụng của express
 ///import các interface để định dạng kiểu cho para của middlewares
-import { Request, Response } from "express"
+import { NextFunction, Request, RequestHandler, Response } from "express"
 import User from "~/models/schemas/User.schema"
 import databaseService from "~/services/database.services"
 import usersService from "~/services/users.services"
@@ -8,6 +8,7 @@ import usersService from "~/services/users.services"
 
 import { ParamsDictionary } from "express-serve-static-core"
 import { RegisterReqBody } from "~/models/requests/User.requests"
+import { error } from "console"
 
 export const loginController = (req: Request, res: Response) => {
   const { email, password } = req.body
@@ -27,7 +28,11 @@ export const loginController = (req: Request, res: Response) => {
   }
 }
 
-export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
+export const registerController = async (
+  req: Request<ParamsDictionary, any, RegisterReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
   //vì trong mô tả của một user đã có email và password, ta đã biết chắc chắn định dạng của email và password như thế nào
   //ta sẽ check sương sương 2 thằng này
 
@@ -39,6 +44,9 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
 
   //!ta bọc lại bằng try-catch vì quá trình này hay phát sinh lỗi (rớt mạng)
   try {
+    //ta demo throw lỗi cho hàm ansync với error handler
+    throw new Error("Tạo thử một cái lỗi nè")
+
     //ta giả bộ với email và password này đã ngon và không cần middleware nữa
     //insertOne: hàm của mongo, là một promise trả ra dữ liệu
     // const result = await usersService.register({ email, password })
@@ -49,9 +57,25 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
       result
     })
   } catch (err) {
-    res.status(400).json({
-      message: "register failed",
-      err
-    })
+    // res.status(400).json({
+    //   message: "register failed",
+    //   err
+    // })
+
+    //demo lỗi với next
+    next(err)
   }
 }
+
+//?Có một vấn đề với việc sử dụng try-catch quá nhiều như này trong quá trình phát triển ứng dụng
+//ta sẽ tạo thêm 1 cái hàm chỉ để xử lí try-catch thôi
+//không cần bọc try-catch trong middleware và controller (và những thằng async)
+// function(func: RequestHandler) => {
+//   return(req,res,next)=>{
+//     try{
+
+//     }catch(error){
+//       next(error)
+//     }
+//   }
+// }

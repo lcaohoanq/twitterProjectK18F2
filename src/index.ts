@@ -1,4 +1,4 @@
-import express from "express"
+import express, { Request, Response, NextFunction } from "express"
 import usersRoute from "./routes/users.routes"
 
 // import { run } from './services/database.services'
@@ -66,7 +66,7 @@ app.use("/users", usersRoute)
 //localhost:3000/api log ra thời gian trong terminal
 //
 
-app.use((err, req, res, next) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.log("Error Handler nè")
   res.status(400).json({ message: err.message })
 })

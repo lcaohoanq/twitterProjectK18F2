@@ -28,11 +28,46 @@ export const loginController = (req: Request, res: Response) => {
   }
 }
 
-export const registerController = async (
-  req: Request<ParamsDictionary, any, RegisterReqBody>,
-  res: Response,
-  next: NextFunction
-) => {
+// export const registerController = async (
+//   req: Request<ParamsDictionary, any, RegisterReqBody>,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   //vì trong mô tả của một user đã có email và password, ta đã biết chắc chắn định dạng của email và password như thế nào
+//   //ta sẽ check sương sương 2 thằng này
+
+//   //* const { email, password } = req.body
+
+//   //nếu chuẩn ta phải truyền nhiều thông tin vào
+//   //email, password, name, ...
+//   //!req.body bị any -> giải pháp: tạo ra 1 interface định nghĩa lại req.body là ntn
+
+//   //!ta bọc lại bằng try-catch vì quá trình này hay phát sinh lỗi (rớt mạng)
+//   try {
+//     //ta demo throw lỗi cho hàm ansync với error handler
+//     throw new Error("Tạo thử một cái lỗi nè")
+
+//     //ta giả bộ với email và password này đã ngon và không cần middleware nữa
+//     //insertOne: hàm của mongo, là một promise trả ra dữ liệu
+//     // const result = await usersService.register({ email, password })
+//     const result = await usersService.register(req.body)
+
+//     res.json({
+//       message: "register successfully",
+//       result
+//     })
+//   } catch (err) {
+//     // res.status(400).json({
+//     //   message: "register failed",
+//     //   err
+//     // })
+
+//     //demo lỗi với next
+//     next(err)
+//   }
+// }
+
+export const registerController = async (req: Request<ParamsDictionary, any, RegisterReqBody>, res: Response) => {
   //vì trong mô tả của một user đã có email và password, ta đã biết chắc chắn định dạng của email và password như thế nào
   //ta sẽ check sương sương 2 thằng này
 
@@ -43,28 +78,18 @@ export const registerController = async (
   //!req.body bị any -> giải pháp: tạo ra 1 interface định nghĩa lại req.body là ntn
 
   //!ta bọc lại bằng try-catch vì quá trình này hay phát sinh lỗi (rớt mạng)
-  try {
-    //ta demo throw lỗi cho hàm ansync với error handler
-    throw new Error("Tạo thử một cái lỗi nè")
 
-    //ta giả bộ với email và password này đã ngon và không cần middleware nữa
-    //insertOne: hàm của mongo, là một promise trả ra dữ liệu
-    // const result = await usersService.register({ email, password })
-    const result = await usersService.register(req.body)
+  throw new Error("Tạo thử một cái lỗi nè")
 
-    res.json({
-      message: "register successfully",
-      result
-    })
-  } catch (err) {
-    // res.status(400).json({
-    //   message: "register failed",
-    //   err
-    // })
+  //ta giả bộ với email và password này đã ngon và không cần middleware nữa
+  //insertOne: hàm của mongo, là một promise trả ra dữ liệu
+  // const result = await usersService.register({ email, password })
+  const result = await usersService.register(req.body)
 
-    //demo lỗi với next
-    next(err)
-  }
+  res.json({
+    message: "register successfully",
+    result
+  })
 }
 
 //?Có một vấn đề với việc sử dụng try-catch quá nhiều như này trong quá trình phát triển ứng dụng

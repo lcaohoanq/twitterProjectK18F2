@@ -1,6 +1,11 @@
 import express from "express"
-import { loginValidator, registerValidator } from "~/middlewares/users.middlewares"
-import { loginController } from "~/controllers/users.controllers"
+import {
+  accessTokenValidator,
+  loginValidator,
+  refreshTokenValidator,
+  registerValidator
+} from "~/middlewares/users.middlewares"
+import { loginController, logoutController } from "~/controllers/users.controllers"
 import { registerController } from "~/controllers/users.controllers"
 import { wrapAsync } from "~/utils/handlers"
 
@@ -78,5 +83,8 @@ usersRoute.post("/register", registerValidator, wrapAsync(registerController))
 //nếu hàm đó là async ta sẽ xài try-catch cho async (next(error))
 
 //ta sẽ đặt hàm xử lí lỗi này ở trên app tổng, đảm bảo tính reuse của nó cho toàn hệ thống
+
+//kiểm tra access, kiểm tra refresh, xoá
+usersRoute.post("/logout", accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
 
 export default usersRoute

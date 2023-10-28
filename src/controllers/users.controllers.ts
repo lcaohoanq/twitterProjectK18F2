@@ -126,3 +126,18 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
 //     }
 //   }
 // }
+
+export const logoutController = async (req: Request, res: Response) => {
+  //lấy refresh_token từ req.body
+  //tìm trong database xem có refresh_token này không
+  //nếu có thì xoá (mà ta đã tìm được từ tầng ở trên rồi)
+
+  //!vào database xoá refresh_token đã tìm được
+
+  const { refresh_token } = req.body
+
+  //logout vào db và xoá refresh token
+  const result = await usersService.logout(refresh_token)
+
+  res.json(result)
+}

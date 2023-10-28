@@ -9,11 +9,19 @@ import usersService from "~/services/users.services"
 import { ParamsDictionary } from "express-serve-static-core"
 import { RegisterReqBody } from "~/models/requests/User.requests"
 import { error } from "console"
+import { ErrorWithStatus } from "~/models/Errors"
+import { ObjectId } from "mongodb"
+import { USERS_MESSAGES } from "~/constants/messages"
 
 export const loginController = async (req: Request, res: Response) => {
+  // throw new Error('test Error') //những người thường throw lỗi sẽ throw lỗi bằng cách này, nhưng cái flow của nó không phù hợp với ErrorWithStatus
+
   //lấy user_id từ user của request
-  const { user }: any = req
-  const user_id = user._id //thằng này ta lấy về từ mongo
+  // const { user }: any = req
+
+  const user = req.user as User //không phân rã nữa
+
+  const user_id = user._id as ObjectId //thằng này ta lấy về từ mongo
 
   //dùng user_id tạo access_token và refresh_token
   const result = await usersService.login(user_id.toString())
@@ -21,7 +29,7 @@ export const loginController = async (req: Request, res: Response) => {
 
   //response access_token và refresh_token về cho client
   res.json({
-    message: "login successfully",
+    message: USERS_MESSAGES.LOGIN_SUCCESS,
     result
   })
 
@@ -101,7 +109,7 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
   const result = await usersService.register(req.body)
 
   res.json({
-    message: "register successfully",
+    message: USERS_MESSAGES.REGISTER_SUCCESS,
     result
   })
 }

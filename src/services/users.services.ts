@@ -4,6 +4,8 @@ import { RegisterReqBody } from "~/models/requests/User.requests"
 import { hashPassword } from "~/utils/crypto"
 import { signToken } from "~/utils/jwt"
 import { TokenType } from "~/constants/enums"
+import RefreshToken from "~/models/schemas/RefreshToken.schema"
+import { ObjectId } from "mongodb"
 
 class UsersService {
   //TODO: Hàm nhận vào user_id (định danh mình là ai) và bỏ vào payload để tạo access_token
@@ -32,6 +34,7 @@ class UsersService {
 
   async checkEmailExist(email: string) {
     const users = await databaseService.users.findOne({ email: email })
+
     //users này trả về một cái User | null
     //ta ép kiểu về boolean true|false
     return Boolean(users)
@@ -75,7 +78,7 @@ class UsersService {
       })
     )
 
-    //*ta hứng vào user_id
+    //*ta hứng vào user_id để đổ lên db
     const user_id = result.insertedId.toString()
 
     //!ta kí theo cách thông thường, synchronus, nhưng nó không hợp lí
@@ -89,6 +92,13 @@ class UsersService {
     //!ta không trả ra result cho người dùng nữa
     // return result
 
+    //!lưu refreshtoken sau khi lưu user vào db
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({
+        token: refresh_token,
+        user_id: new ObjectId(user_id)
+      })
+    )
     //* mà trả ra này
     return { access_token, refresh_token }
   }
@@ -96,6 +106,15 @@ class UsersService {
   async login(user_id: string) {
     //dùng user_id để tạo access và refresh token
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
+
+    //!lưu refreshtoken vào db
+    await databaseService.refreshTokens.insertOne(
+      new RefreshToken({
+        token: refresh_token,
+        user_id: new ObjectId(user_id)
+      })
+    )
+
     return { access_token, refresh_token }
   }
 }

@@ -45,7 +45,8 @@ method: POST
 body: {email, password}
 */
 
-usersRoute.get("/login", loginValidator, loginController)
+//*bọc lại wrapAsync
+usersRoute.get("/login", loginValidator, wrapAsync(loginController))
 
 //thêm 1 method post
 //giả vờ người dùng đưa ta một register hoàn hảo, không cần phải validate

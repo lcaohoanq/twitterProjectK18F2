@@ -133,7 +133,17 @@ export const registerValidator = validate(
         options: async (value, { req }) => {
           const isExist = await usersService.checkEmailExist(value)
           if (isExist) {
+            //lỗi này sẽ không phải trực tiếp được Error Handler xử lí
+            //mà nó được checkSchema hứng lại (ném ngược lên validate)
+            //validate được gọi ở hàm validate trong validation.ts
+            //hứng vào request -> validationResult
+
             throw new Error(USERS_MESSAGES.EMAIL_ALREADY_EXISTS)
+
+            //!nếu ta throw new ErrorWithStatus
+            //thì bên validation.ts sẽ hứng lại và kiểm tra xem lỗi có tạo từ ... không
+            //nếu có thì quăng thẳng ra cho Errorhandler
+
             // throw new ErrorWithStatus({
             //   message: "Email already exist",
             //   status: 401

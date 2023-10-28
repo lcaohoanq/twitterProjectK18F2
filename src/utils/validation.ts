@@ -8,6 +8,8 @@ import { EntityError, ErrorWithStatus } from "~/models/Errors"
 // can be reused by many routes
 
 // sequential processing, stops running validations chain if the previous one fails.
+
+//TODO: đây là một hàm tập hợp các lỗi trả từ checkSchema của validate
 export const validate = (validation: RunnableValidationChains<ValidationChain>) => {
   //!khi mà ai đó gọi validate này sẽ nhận được một middlewares
   //! ta bỏ checkSchema vào validate

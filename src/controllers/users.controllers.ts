@@ -10,8 +10,22 @@ import { ParamsDictionary } from "express-serve-static-core"
 import { RegisterReqBody } from "~/models/requests/User.requests"
 import { error } from "console"
 
-export const loginController = (req: Request, res: Response) => {
-  const { email, password } = req.body
+export const loginController = async (req: Request, res: Response) => {
+  //lấy user_id từ user của request
+  const { user }: any = req
+  const user_id = user._id //thằng này ta lấy về từ mongo
+
+  //dùng user_id tạo access_token và refresh_token
+  const result = await usersService.login(user_id.toString())
+  //login dùng để nhận user_id và trả về access_token và refresh_token
+
+  //response access_token và refresh_token về cho client
+  res.json({
+    message: "login successfully",
+    result
+  })
+
+  /*   const { email, password } = req.body
   if (email === "test@gmail.com" || password === "123456") {
     return res.json({
       message: "login successfully",
@@ -25,7 +39,7 @@ export const loginController = (req: Request, res: Response) => {
     return res.status(400).json({
       error: "login failed"
     })
-  }
+  } */
 }
 
 // export const registerController = async (

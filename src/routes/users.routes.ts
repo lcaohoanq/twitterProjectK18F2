@@ -37,6 +37,14 @@ const usersRoute = express.Router()
 //tách hàm để viết các method
 //đổi tweets thành login
 //ta không sử import từ đầu vì nếu cần thì ta mới gọi tới loginValidator
+
+/*!!!!!!!
+des: đăng nhập
+path: /users/login
+method: POST
+body: {email, password}
+*/
+
 usersRoute.get("/login", loginValidator, loginController)
 
 //thêm 1 method post

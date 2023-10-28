@@ -25,6 +25,11 @@ class UsersService {
   }
   //?Xài 2 hàm trên ở đâu? Khi mà ta đăng kí thì ta sẽ tạo 2 mã này đưa cho người dùng, khi người dùng làm gì, gửi ngược lại mình cái mã này là mình sẽ biết đó là ai
 
+  //!hàm kí access và resfresh token
+  private signAccessAndRefreshToken(user_id: string) {
+    return Promise.all([this.signAccessToken(user_id), this.signRefreshToken(user_id)])
+  }
+
   async checkEmailExist(email: string) {
     const users = await databaseService.users.findOne({ email: email })
     //users này trả về một cái User | null
@@ -78,16 +83,19 @@ class UsersService {
     // const refresh_token = await this.signRefreshToken(user_id)
 
     // *ta chủ đích sử dụng kí bất đồng bộ
-    const [access_token, refresh_token] = await Promise.all([
-      this.signAccessToken(user_id),
-      this.signRefreshToken(user_id)
-    ])
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
     //phân rã mảng ta xài ngoặc vuông
 
     //!ta không trả ra result cho người dùng nữa
     // return result
 
     //* mà trả ra này
+    return { access_token, refresh_token }
+  }
+
+  async login(user_id: string) {
+    //dùng user_id để tạo access và refresh token
+    const [access_token, refresh_token] = await this.signAccessAndRefreshToken(user_id)
     return { access_token, refresh_token }
   }
 }

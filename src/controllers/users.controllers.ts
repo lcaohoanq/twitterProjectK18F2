@@ -7,13 +7,13 @@ import usersService from "~/services/users.services"
 //1 req của client gữi lên server sẽ có body(chứa các thứ cẫn gữi)
 
 import { ParamsDictionary } from "express-serve-static-core"
-import { RegisterReqBody } from "~/models/requests/User.requests"
+import { LoginReqBody, LogoutReqBody, RegisterReqBody } from "~/models/requests/User.requests"
 import { error } from "console"
 import { ErrorWithStatus } from "~/models/Errors"
 import { ObjectId } from "mongodb"
 import { USERS_MESSAGES } from "~/constants/messages"
 
-export const loginController = async (req: Request, res: Response) => {
+export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   // throw new Error('test Error') //những người thường throw lỗi sẽ throw lỗi bằng cách này, nhưng cái flow của nó không phù hợp với ErrorWithStatus
 
   //lấy user_id từ user của request
@@ -127,7 +127,7 @@ export const registerController = async (req: Request<ParamsDictionary, any, Reg
 //   }
 // }
 
-export const logoutController = async (req: Request, res: Response) => {
+export const logoutController = async (req: Request<ParamsDictionary, any, LogoutReqBody>, res: Response) => {
   //lấy refresh_token từ req.body
   //tìm trong database xem có refresh_token này không
   //nếu có thì xoá (mà ta đã tìm được từ tầng ở trên rồi)

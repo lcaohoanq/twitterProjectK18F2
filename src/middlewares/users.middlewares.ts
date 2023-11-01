@@ -262,8 +262,8 @@ export const accessTokenValidator = validate(
             //nếu xuống được đây thì tức là access_token có rồi
             //ta sẽ verify access_token và lấy payload() ra lưu lại trong req
             try {
-              const decode_authorization = await verifyToken({ token: access_token })
-              req.decode_authorization = decode_authorization
+              const decoded_authorization = await verifyToken({ token: access_token })
+              ;(req as Request).decoded_authorization = decoded_authorization
             } catch (error) {
               throw new ErrorWithStatus({
                 message: capitalize((error as JsonWebTokenError).message),
@@ -290,17 +290,25 @@ export const refreshTokenValidator = validate(
         custom: {
           options: async (value, { req }) => {
             try {
-              const decoded_refresh_token = await verifyToken({ token: value })
-              const refresh_token = await databaseService.refreshTokens.findOne({
-                token: value
-              })
+              const [decoded_refresh_token, refresh_token] = await Promise.all([
+                verifyToken({ token: value }),
+                //nếu ta không bọc cái này bằng try-catch
+                //trong quá trình verifyToken nếu phát sinh lỗi thì sẽ bị ném tới validate, validate dồn lỗi gửi về
+                //lỗi verify sẽ không có status -> errorHandler nhận về lỗi xong sẽ biến nó thành 422
+                databaseService.refreshTokens.findOne({
+                  token: value
+                })
+              ])
+
+              //lỗi này chắc chắn sẽ có status (lỗi ta tự chế)
+              //ta đã custom lỗi này về 401
               if (refresh_token === null) {
                 throw new ErrorWithStatus({
                   message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST,
                   status: HTTP_STATUS.UNAUTHORIZED
                 })
               }
-              req.decoded_refresh_token = decoded_refresh_token
+              ;(req as Request).decoded_refresh_token = decoded_refresh_token
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
                 throw new ErrorWithStatus({

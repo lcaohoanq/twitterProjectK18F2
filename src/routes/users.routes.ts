@@ -1,15 +1,25 @@
 import express from "express"
 import {
   accessTokenValidator,
+  emailVerifyTokenValidator,
+  forgotPasswordValidator,
   loginValidator,
   refreshTokenValidator,
-  registerValidator
+  registerValidator,
+  verifyForgotPasswordTokenValidator
 } from "~/middlewares/users.middlewares"
-import { loginController, logoutController } from "~/controllers/users.controllers"
+import {
+  emailVerifyController,
+  forgotPasswordController,
+  loginController,
+  logoutController,
+  resendEmailVerifyController,
+  verifyForgotPasswordTokenController
+} from "~/controllers/users.controllers"
 import { registerController } from "~/controllers/users.controllers"
 import { wrapAsync } from "~/utils/handlers"
 
-const usersRoute = express.Router()
+const usersRouter = express.Router()
 
 //middleWare
 //những middleware này ta chỉ demo xem như thế nào thôi
@@ -51,7 +61,7 @@ body: {email, password}
 */
 
 //*bọc lại wrapAsync
-usersRoute.get("/login", loginValidator, wrapAsync(loginController))
+usersRouter.get("/login", loginValidator, wrapAsync(loginController))
 
 //thêm 1 method post
 //giả vờ người dùng đưa ta một register hoàn hảo, không cần phải validate
@@ -76,7 +86,7 @@ body:{
 // usersRoute.post("/register", registerValidator, registerController)
 
 //ta tạm thời cất hàm registerController để demo cách thức hoạt động của Request Handler
-usersRoute.post("/register", registerValidator, wrapAsync(registerController))
+usersRouter.post("/register", registerValidator, wrapAsync(registerController))
 
 //!khi gặp lỗi ta không được throw ra, phải dồn tất cả lỗi về Error Handler
 //bổ sung next cho hàm đó
@@ -85,6 +95,59 @@ usersRoute.post("/register", registerValidator, wrapAsync(registerController))
 //ta sẽ đặt hàm xử lí lỗi này ở trên app tổng, đảm bảo tính reuse của nó cho toàn hệ thống
 
 //kiểm tra access, kiểm tra refresh, xoá
-usersRoute.post("/logout", accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
+usersRouter.post("/logout", accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
 
-export default usersRoute
+/* 
+route: verify-email
+method: post
+path: /users/verify-email?
+body: {
+  email_verify_token: string
+}
+tại sao ta không gửi lên at,rt vì người dùng có thể đăng kí bằng máy tính và dùng đt để verify
+*/
+
+usersRouter.post("/verify-email", emailVerifyTokenValidator, wrapAsync(emailVerifyController))
+
+/*
+des:gửi lại verify email khi người dùng nhấn vào nút gửi lại email,
+path: /resend-verify-email
+method: POST
+Header:{Authorization: Bearer <access_token>} //đăng nhập mới cho resend email verify
+body: {}
+*/
+usersRouter.post("/resend-verify-email", accessTokenValidator, wrapAsync(resendEmailVerifyController))
+
+//vì người dùng sẽ truyền lên accesstoken, nên ta sẽ dùng lại accessTokenValidator để kiểm tra
+//accesstoken đó
+
+//:
+//resendEmailVerifyController:
+//    1. kiểm tra xem account đã verify chưa, nếu nó verify rồi thì ta
+//      không cần tiến hành gửi email lại cho client
+//    2. nếu chưa verify thì controller ta sẽ tạo để xử lý việc resend email verify
+//    c
+
+/*
+des: cung cấp email để reset password, gửi email cho người dùng
+path: /forgot-password
+method: POST
+Header: không cần, vì  ngta quên mật khẩu rồi, thì sao mà đăng nhập để có authen được
+body: {email: string}
+*/
+usersRouter.post("/forgot-password", forgotPasswordValidator, wrapAsync(forgotPasswordController))
+
+/*
+des: Verify link in email to reset password
+path: /verify-forgot-password
+method: POST
+Header: không cần, vì  ngta quên mật khẩu rồi, thì sao mà đăng nhập để có authen được
+body: {forgot_password_token: string}
+*/
+usersRouter.post(
+  "/verify-forgot-password",
+  verifyForgotPasswordTokenValidator,
+  wrapAsync(verifyForgotPasswordTokenController)
+)
+
+export default usersRouter

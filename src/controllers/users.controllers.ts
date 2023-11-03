@@ -7,11 +7,21 @@ import usersService from "~/services/users.services"
 //1 req của client gữi lên server sẽ có body(chứa các thứ cẫn gữi)
 
 import { ParamsDictionary } from "express-serve-static-core"
-import { LoginReqBody, LogoutReqBody, RegisterReqBody } from "~/models/requests/User.requests"
+import {
+  ForgotPasswordReqBody,
+  LoginReqBody,
+  LogoutReqBody,
+  RegisterReqBody,
+  TokenPayload,
+  VerifyEmailReqBody,
+  VerifyForgotPasswordReqBody
+} from "~/models/requests/User.requests"
 import { error } from "console"
 import { ErrorWithStatus } from "~/models/Errors"
 import { ObjectId } from "mongodb"
 import { USERS_MESSAGES } from "~/constants/messages"
+import { UserVerifyStatus } from "~/constants/enums"
+import HTTP_STATUS from "~/constants/httpStatus"
 
 export const loginController = async (req: Request<ParamsDictionary, any, LoginReqBody>, res: Response) => {
   // throw new Error('test Error') //những người thường throw lỗi sẽ throw lỗi bằng cách này, nhưng cái flow của nó không phù hợp với ErrorWithStatus
@@ -141,3 +151,118 @@ export const logoutController = async (req: Request<ParamsDictionary, any, Logou
 
   res.json(result)
 }
+
+export const emailVerifyController = async (
+  req: Request<ParamsDictionary, any, VerifyEmailReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  // const { email_verify_token } = req.body
+  // const user = await databaseService.users.findOne({ email_verify_token: email_verify_token })
+  //ta có thể tìm user thông qua email_verify_token do người dùng gui lên lên thế này nhưng hiệu năng sẽ kém
+  //nên thay vào đó ta sẽ lấy thông tin _id của user từ decoded_email_verify_token mà ta thu được từ middleware trước
+  //và tìm user thông qua _id đó
+  const { user_id } = req.decoded_email_verify_token as TokenPayload
+
+  //!cách này bth
+  // const user = await databaseService.users.findOne({
+  //   _id: new ObjectId(user_id),
+  // }); //hiệu năng cao hơn
+  // //nếu k có user thì cho lỗi 404: not found
+
+  //ta đã hứng user ở bên middleware
+  const user = req.user as User
+
+  //nếu đã verify rồi thì
+  if (user.verify === UserVerifyStatus.Verified) {
+    //mặc định là status 200
+    return res.json({
+      message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
+    })
+  }
+
+  //nếu mà xuống được đây nghĩa user này chưa verify, chưa bị banned, và khớp mã
+  //!NGON
+  //mình tiến hành update: verify: 1, xoá email_mail_verify_token, update_at
+
+  const result = await usersService.verifyEmail(user_id)
+  //để cập nhật lại email_verify_token thành rỗng và tạo ra access_token và refresh_token mới
+  //gửi cho người vừa request email verify đang nhập
+  return res.json({
+    message: USERS_MESSAGES.EMAIL_VERIFY_SUCCESS,
+    result: result
+  })
+}
+
+export const resendEmailVerifyController = async (req: Request, res: Response, next: NextFunction) => {
+  //?nếu vô được đây thì
+  //khi đến đây thì accesstokenValidator đã chạy rồi => access_token đã được decode
+  //và lưu vào req.user, nên trong đó sẽ có user._id để tao sử dụng
+  const { user_id } = req.decoded_authorization as TokenPayload //lấy user_id từ decoded_authorization
+  //từ user_id này ta sẽ tìm user trong database
+  const user = await databaseService.users.findOne({
+    _id: new ObjectId(user_id)
+  })
+  //nếu k có user thì trả về lỗi 404: not found
+  if (!user) {
+    throw new ErrorWithStatus({
+      message: USERS_MESSAGES.USER_NOT_FOUND,
+      status: HTTP_STATUS.NOT_FOUND
+    })
+  }
+  //!cập nhật thêm, check banned
+  if (user.verify == UserVerifyStatus.Banned) {
+    throw new ErrorWithStatus({
+      message: USERS_MESSAGES.USER_BANNED,
+      status: HTTP_STATUS.FORBIDDEN
+    })
+  }
+
+  //nếu user đã verify email trước đó rồi thì trả về lỗi 400: bad request
+  if (user.verify == UserVerifyStatus.Verified) {
+    return res.json({
+      message: USERS_MESSAGES.EMAIL_ALREADY_VERIFIED_BEFORE
+    })
+  }
+  //nếu user chưa verify email thì ta sẽ gửi lại email verify cho họ
+  //cập nhật email_verify_token mới và gửi lại email verify cho họ
+  const result = await usersService.resendEmailVerify(user_id)
+  //result chứa message nên ta chỉ cần trả  result về cho client
+  return res.json(result)
+}
+
+export const forgotPasswordController = async (
+  req: Request<ParamsDictionary, any, ForgotPasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  //middleware forgotPasswordValidator đã chạy rồi, nên ta có thể lấy _id từ user đã tìm được bằng email
+
+  //nếu ta lấy ra từ mongo -> _id
+  //lấy ra từ payload      -> user_id
+  const { _id } = req.user as User
+  //cái _id này là objectid, nên ta phải chuyển nó về string
+  //!_id là thuộc tính của mongoDB với kiểu là ObjectId
+  //chứ không truyền trực tiếp vào hàm forgotPassword
+  const result = await usersService.forgotPassword((_id as ObjectId).toString())
+  return res.json(result)
+
+  // return res.json({
+  //   message: USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_SUCCESS
+  // })
+}
+
+export const verifyForgotPasswordTokenController = async (
+  req: Request<ParamsDictionary, any, VerifyForgotPasswordReqBody>,
+  res: Response,
+  next: NextFunction
+) => {
+  //nếu đã đến bước này nghĩa là ta đã tìm có forgot_password_token hợp lệ
+  //và đã lưu vào req.decoded_forgot_password_token
+  //thông tin của user
+  //ta chỉ cần thông báo rằng token hợp lệ
+  return res.json({
+    message: USERS_MESSAGES.VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS
+  })
+}
+//trong messages.ts thêm   VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: 'Verify forgot password token success'

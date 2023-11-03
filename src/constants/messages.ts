@@ -59,5 +59,7 @@ export const USERS_MESSAGES = {
 
   FORGOT_PASSWORD_TOKEN_SUCCESS: "Forgot password token success",
 
-  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: "Verify forgot password token success"
+  VERIFY_FORGOT_PASSWORD_TOKEN_SUCCESS: "Verify forgot password token success",
+
+  RESET_PASSWORD_SUCCESS: "Reset password success"
 } as const //để k ai chỉnh đc

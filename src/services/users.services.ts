@@ -1,14 +1,14 @@
-import User from "~/models/schemas/User.schema"
-import databaseService from "./database.services"
-import { RegisterReqBody, UpdateMeReqBody } from "~/models/requests/User.requests"
-import { hashPassword } from "~/utils/crypto"
-import { signToken } from "~/utils/jwt"
-import { TokenType, UserVerifyStatus } from "~/constants/enums"
-import RefreshToken from "~/models/schemas/RefreshToken.schema"
-import { ObjectId } from "mongodb"
-import { USERS_MESSAGES } from "~/constants/messages"
-import { ErrorWithStatus } from "~/models/Errors"
-import HTTP_STATUS from "~/constants/httpStatus"
+import User from "~/models/schemas/User.schema";
+import databaseService from "./database.services";
+import { RegisterReqBody, UpdateMeReqBody } from "~/models/requests/User.requests";
+import { hashPassword } from "~/utils/crypto";
+import { signToken } from "~/utils/jwt";
+import { TokenType, UserVerifyStatus } from "~/constants/enums";
+import RefreshToken from "~/models/schemas/RefreshToken.schema";
+import { ObjectId } from "mongodb";
+import { USERS_MESSAGES } from "~/constants/messages";
+import { ErrorWithStatus } from "~/models/Errors";
+import HTTP_STATUS from "~/constants/httpStatus";
 
 class UsersService {
   //TODO: Hàm nhận vào user_id (định danh mình là ai) và bỏ vào payload để tạo access_token
@@ -19,7 +19,7 @@ class UsersService {
       options: { expiresIn: process.env.ACCESS_TOKEN_EXPIRE_IN },
       //vì đã update trong env các jwt secret mới, và ta đã customize trong jwt nên cần phải thay đổi
       privateKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
-    })
+    });
   }
 
   //TODO: Hàm nhận vào user_id (định danh mình là ai) và bỏ vào payload để tạo refresh_token
@@ -30,12 +30,12 @@ class UsersService {
       options: { expiresIn: process.env.REFRESH_TOKEN_EXPIRE_IN },
       //vì đã update trong env các jwt secret mới, và ta đã customize trong jwt nên cần phải thay đổi
       privateKey: process.env.JWT_SECRET_REFRESH_TOKEN as string
-    })
+    });
   }
 
   //TODO: hàm kí access và resfresh token
   private signAccessAndRefreshToken({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
-    return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })])
+    return Promise.all([this.signAccessToken({ user_id, verify }), this.signRefreshToken({ user_id, verify })]);
   }
   //?Xài 2 hàm trên ở đâu? Khi mà ta đăng kí thì ta sẽ tạo 2 mã này đưa cho người dùng, khi người dùng làm gì, gửi ngược lại mình cái mã này là mình sẽ biết đó là ai
 
@@ -47,7 +47,7 @@ class UsersService {
       options: { expiresIn: process.env.EMAIL_VERIFY_TOKEN_EXPIRE_IN },
       //vì đã update trong env các jwt secret mới, và ta đã customize trong jwt nên cần phải thay đổi
       privateKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
-    })
+    });
   }
 
   //TODO: tạo hàm signForgotPasswordToken
@@ -56,15 +56,15 @@ class UsersService {
       payload: { user_id, token_type: TokenType.ForgotPassWordToken, verify: verify },
       options: { expiresIn: process.env.FORGOT_PASSWORD_TOKEN_EXPIRE_IN },
       privateKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string //thêm
-    })
+    });
   }
 
   async checkEmailExist(email: string) {
-    const users = await databaseService.users.findOne({ email: email })
+    const users = await databaseService.users.findOne({ email: email });
 
     //users này trả về một cái User | null
     //ta ép kiểu về boolean true|false
-    return Boolean(users)
+    return Boolean(users);
   }
 
   //*demo với email và password
@@ -84,11 +84,11 @@ class UsersService {
 
   async register(payload: RegisterReqBody) {
     //ta tự tạo 1 user_id mà không cần nhờ đến mongo nữa
-    const user_id = new ObjectId()
+    const user_id = new ObjectId();
     const email_verify_token = await this.signEmailVerifyToken({
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
-    })
+    });
 
     //trong result này có gì?
     //"acknowledge"
@@ -119,7 +119,7 @@ class UsersService {
         //payload.date_of_birth là một string được ép kiểu về date
         password: hashPassword(payload.password)
       })
-    )
+    );
 
     //*ta hứng vào user_id để đổ lên db
     // const user_id = result.insertedId.toString() //đây là hành động mà ta lấy của mongoDB
@@ -132,7 +132,7 @@ class UsersService {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
       user_id: user_id.toString(),
       verify: UserVerifyStatus.Unverified
-    })
+    });
     //phân rã mảng ta xài ngoặc vuông
 
     //!ta không trả ra result cho người dùng nữa
@@ -144,14 +144,14 @@ class UsersService {
         token: refresh_token,
         user_id: new ObjectId(user_id)
       })
-    )
+    );
     //giả lập gửi mail bằng console.log
     //thông tin này ta sẽ gửi vào mail của người đăng kí, và người đăng kí sẽ đưa lại mình
-    console.log("email_verify_token\n", email_verify_token)
+    console.log("email_verify_token\n", email_verify_token);
     //!khi mình đăng kí một user thành công thì terminal sẽ trả cho mình cái emailverifytoken vào trong terminal
 
     //* ta trả ra cho client at và rt
-    return { access_token, refresh_token }
+    return { access_token, refresh_token };
   }
 
   async login({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -159,7 +159,7 @@ class UsersService {
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
       user_id,
       verify
-    })
+    });
 
     //!lưu refreshtoken vào db
     await databaseService.refreshTokens.insertOne(
@@ -167,16 +167,16 @@ class UsersService {
         token: refresh_token,
         user_id: new ObjectId(user_id)
       })
-    )
+    );
 
-    return { access_token, refresh_token }
+    return { access_token, refresh_token };
   }
 
   async logout(refresh_token: string) {
-    await databaseService.refreshTokens.deleteOne({ token: refresh_token })
+    await databaseService.refreshTokens.deleteOne({ token: refresh_token });
     return {
       message: USERS_MESSAGES.LOGOUT_SUCCESS
-    }
+    };
   }
 
   async verifyEmail(user_id: string) {
@@ -194,21 +194,21 @@ class UsersService {
           }
         }
       ]
-    )
+    );
     //nếu verify xong thì ta sẽ gửi lại at, rt cho người dùng
     //để cung cấp dịch vụ cho họ ngay
     const [access_token, refresh_token] = await this.signAccessAndRefreshToken({
       user_id,
       verify: UserVerifyStatus.Verified
-    })
+    });
     //lưu at và rt vào db
     await databaseService.refreshTokens.insertOne(
       new RefreshToken({
         token: refresh_token,
         user_id: new ObjectId(user_id)
       })
-    )
-    return { access_token, refresh_token }
+    );
+    return { access_token, refresh_token };
   }
 
   async resendEmailVerify(user_id: string) {
@@ -216,21 +216,21 @@ class UsersService {
     const email_verify_token = await this.signEmailVerifyToken({
       user_id,
       verify: UserVerifyStatus.Unverified
-    })
+    });
     //chưa làm chức năng gửi email, nên giả bộ ta đã gửi email cho client rồi, hiển thị bằng console.log
-    console.log("resend verify email token\n", email_verify_token)
+    console.log("resend verify email token\n", email_verify_token);
     //vào database và cập nhật lại email_verify_token mới trong table user
     await databaseService.users.updateOne({ _id: new ObjectId(user_id) }, [
       {
         $set: { email_verify_token: email_verify_token, updated_at: "$$NOW" }
       }
-    ])
+    ]);
     //trả về message
     // console.log(email_verify_token)
 
     return {
       message: USERS_MESSAGES.RESEND_VERIFY_EMAIL_SUCCESS
-    }
+    };
   }
 
   async forgotPassword({ user_id, verify }: { user_id: string; verify: UserVerifyStatus }) {
@@ -240,7 +240,7 @@ class UsersService {
       //khi mà mình quên mật khẩu thì tài khoản verify hoặc không thì ta vẫn không biết được,
       //ta sẽ nhận thông tin verify từ bên ngoài
       verify
-    })
+    });
 
     //gửi email cho người dùng đường link có cấu trúc như này
     //http://appblabla/forgot-password?token=xxxx
@@ -254,12 +254,12 @@ class UsersService {
       {
         $set: { forgot_password_token: forgot_password_token, updated_at: "$$NOW" }
       }
-    ])
+    ]);
 
-    console.log("forgot_password_token\n", forgot_password_token)
+    console.log("forgot_password_token\n", forgot_password_token);
     return {
       message: USERS_MESSAGES.CHECK_EMAIL_TO_RESET_PASSWORD
-    }
+    };
   }
 
   async resetPassword({ user_id, password }: { user_id: string; password: string }) {
@@ -274,12 +274,12 @@ class UsersService {
           updated_at: "$$NOW"
         }
       }
-    ])
+    ]);
     //nếu bạn muốn ngta đổi mk xong tự động đăng nhập luôn thì trả về access_token và refresh_token
     //ở đây mình chỉ cho ngta đổi mk thôi, nên trả về message
     return {
       message: USERS_MESSAGES.RESET_PASSWORD_SUCCESS
-    }
+    };
   }
 
   async getMe(user_id: string) {
@@ -295,14 +295,14 @@ class UsersService {
         }
         //dữ liệu trong postman đã bị ẩn đi 3 thuộc tính trên
       }
-    )
-    return user
+    );
+    return user;
   }
 
   async updateMe(user_id: string, payload: UpdateMeReqBody) {
     //hỏi người dùng trong payload có dob không?
     //nếu có thì truyền vô trong một cái payload mới là _payload
-    const _payload = payload.date_of_birth ? { ...payload, date_of_birth: new Date(payload.date_of_birth) } : payload
+    const _payload = payload.date_of_birth ? { ...payload, date_of_birth: new Date(payload.date_of_birth) } : payload;
 
     //cập nhật _payload lên db
     const user = await databaseService.users.findOneAndUpdate(
@@ -324,8 +324,8 @@ class UsersService {
           forgot_password_token: 0
         }
       }
-    )
-    return user //đây là document sau khi update
+    );
+    return user; //đây là document sau khi update
   }
 
   async getProfile(username: string) {
@@ -341,16 +341,16 @@ class UsersService {
           update_at: 0
         }
       }
-    )
+    );
     if (user == null) {
       throw new ErrorWithStatus({
         message: USERS_MESSAGES.USER_NOT_FOUND,
         status: HTTP_STATUS.NOT_FOUND
-      })
+      });
     }
-    return user
+    return user;
   }
 }
 
-const usersService = new UsersService()
-export default usersService
+const usersService = new UsersService();
+export default usersService;

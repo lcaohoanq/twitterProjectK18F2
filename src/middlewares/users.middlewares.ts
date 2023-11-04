@@ -16,21 +16,21 @@
 // }
 
 ///import các interface để định dạng kiểu cho para của middlewares
-import { Request, Response, NextFunction } from "express"
-import { ParamSchema, checkSchema } from "express-validator"
-import { JsonWebTokenError } from "jsonwebtoken"
-import { capitalize } from "lodash"
-import { ObjectId } from "mongodb"
-import { TokenType, UserVerifyStatus } from "~/constants/enums"
-import HTTP_STATUS from "~/constants/httpStatus"
-import { USERS_MESSAGES } from "~/constants/messages"
-import { ErrorWithStatus } from "~/models/Errors"
-import { TokenPayload } from "~/models/requests/User.requests"
-import databaseService from "~/services/database.services"
-import usersService from "~/services/users.services"
-import { hashPassword } from "~/utils/crypto"
-import { verifyToken } from "~/utils/jwt"
-import { validate } from "~/utils/validation"
+import { Request, Response, NextFunction } from "express";
+import { ParamSchema, checkSchema } from "express-validator";
+import { JsonWebTokenError } from "jsonwebtoken";
+import { capitalize } from "lodash";
+import { ObjectId } from "mongodb";
+import { TokenType, UserVerifyStatus } from "~/constants/enums";
+import HTTP_STATUS from "~/constants/httpStatus";
+import { USERS_MESSAGES } from "~/constants/messages";
+import { ErrorWithStatus } from "~/models/Errors";
+import { TokenPayload } from "~/models/requests/User.requests";
+import databaseService from "~/services/database.services";
+import usersService from "~/services/users.services";
+import { hashPassword } from "~/utils/crypto";
+import { verifyToken } from "~/utils/jwt";
+import { validate } from "~/utils/validation";
 
 //*Request, Response, NextFunction là 3 interface, được express cung cấp, nhằm bổ nghĩa cho các param
 
@@ -66,7 +66,7 @@ const nameSchema: ParamSchema = {
     },
     errorMessage: USERS_MESSAGES.NAME_LENGTH_MUST_BE_FROM_1_TO_100
   }
-}
+};
 
 const passwordSchema: ParamSchema = {
   notEmpty: {
@@ -95,7 +95,7 @@ const passwordSchema: ParamSchema = {
     },
     errorMessage: USERS_MESSAGES.PASSWORD_MUST_BE_STRONG
   }
-}
+};
 
 const confirmPasswordSchema: ParamSchema = {
   notEmpty: {
@@ -129,12 +129,12 @@ const confirmPasswordSchema: ParamSchema = {
     options: (value, { req }) => {
       //value đại diện cho confirm_password vì nó nằm ở confirm_password
       if (value !== req.body.password) {
-        throw new Error(USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD)
+        throw new Error(USERS_MESSAGES.CONFIRM_PASSWORD_MUST_BE_THE_SAME_AS_PASSWORD);
       }
-      return true
+      return true;
     }
   }
-}
+};
 
 const dataOfBirthSchema: ParamSchema = {
   isISO8601: {
@@ -144,7 +144,7 @@ const dataOfBirthSchema: ParamSchema = {
     }
   },
   errorMessage: USERS_MESSAGES.DATE_OF_BIRTH_BE_ISO8601
-}
+};
 
 const imageSchema: ParamSchema = {
   optional: true,
@@ -159,7 +159,7 @@ const imageSchema: ParamSchema = {
     },
     errorMessage: USERS_MESSAGES.IMAGE_URL_LENGTH_MUST_BE_FROM_1_TO_400
   }
-}
+};
 //* /////////////////////////////////////////////////////////////////////////////////////////
 export const loginValidator = validate(
   checkSchema(
@@ -175,12 +175,12 @@ export const loginValidator = validate(
             const user = await databaseService.users.findOne({
               email: value,
               password: hashPassword(req.body.password) //nếu ta hash cái password, ta mã hoá và so khớp với dữ liệu trên db xem có trùng không
-            })
+            });
             if (user == null) {
-              throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT) //ném một lỗi mặc định 422
+              throw new Error(USERS_MESSAGES.EMAIL_OR_PASSWORD_IS_INCORRECT); //ném một lỗi mặc định 422
             }
-            req.user = user //ta gửi thằng user này lên cái đường truyền tiếp theo, xử lí tiếp, đã ngon rồi
-            return true
+            req.user = user; //ta gửi thằng user này lên cái đường truyền tiếp theo, xử lí tiếp, đã ngon rồi
+            return true;
           }
         }
       },
@@ -212,7 +212,7 @@ export const loginValidator = validate(
     },
     ["body"] //thông báo cho nó chỉ check phần body
   )
-)
+);
 
 export const registerValidator = validate(
   checkSchema(
@@ -239,14 +239,14 @@ export const registerValidator = validate(
         custom: {
           //value đại diện cho email
           options: async (value, { req }) => {
-            const isExist = await usersService.checkEmailExist(value)
+            const isExist = await usersService.checkEmailExist(value);
             if (isExist) {
               //lỗi này sẽ không phải trực tiếp được Error Handler xử lí
               //mà nó được checkSchema hứng lại (ném ngược lên validate)
               //validate được gọi ở hàm validate trong validation.ts
               //hứng vào request -> validationResult
 
-              throw new Error(USERS_MESSAGES.EMAIL_ALREADY_EXISTS)
+              throw new Error(USERS_MESSAGES.EMAIL_ALREADY_EXISTS);
 
               //!nếu ta throw new ErrorWithStatus
               //thì bên validation.ts sẽ hứng lại và kiểm tra xem lỗi có tạo từ ... không
@@ -257,7 +257,7 @@ export const registerValidator = validate(
               //   status: 401
               // })
             }
-            return true
+            return true;
           }
         }
       },
@@ -268,7 +268,7 @@ export const registerValidator = validate(
     },
     ["body"]
   )
-)
+);
 
 export const accessTokenValidator = validate(
   checkSchema(
@@ -280,12 +280,12 @@ export const accessTokenValidator = validate(
         // },
         custom: {
           options: async (value, { req }) => {
-            const access_token = value.split(" ")[1]
+            const access_token = value.split(" ")[1];
             if (!access_token) {
               throw new ErrorWithStatus({
                 message: USERS_MESSAGES.ACCESS_TOKEN_IS_REQUIRED,
                 status: HTTP_STATUS.UNAUTHORIZED
-              })
+              });
             }
             //nếu xuống được đây thì tức là access_token có rồi
             //ta sẽ verify access_token và lấy payload() ra lưu lại trong req
@@ -294,22 +294,22 @@ export const accessTokenValidator = validate(
                 token: access_token,
                 //nhận thêm vào secretKey trong quá trình mã hoá
                 secretOrPublicKey: process.env.JWT_SECRET_ACCESS_TOKEN as string
-              })
-              ;(req as Request).decoded_authorization = decoded_authorization
+              });
+              (req as Request).decoded_authorization = decoded_authorization;
             } catch (error) {
               throw new ErrorWithStatus({
                 message: capitalize((error as JsonWebTokenError).message),
                 status: HTTP_STATUS.UNAUTHORIZED
-              })
+              });
             }
-            return true
+            return true;
           }
         }
       }
     },
     ["headers"]
   )
-)
+);
 
 export const refreshTokenValidator = validate(
   checkSchema(
@@ -330,7 +330,7 @@ export const refreshTokenValidator = validate(
                 databaseService.refreshTokens.findOne({
                   token: value
                 })
-              ])
+              ]);
 
               //lỗi này chắc chắn sẽ có status (lỗi ta tự chế)
               //ta đã custom lỗi này về 401
@@ -338,26 +338,26 @@ export const refreshTokenValidator = validate(
                 throw new ErrorWithStatus({
                   message: USERS_MESSAGES.USED_REFRESH_TOKEN_OR_NOT_EXIST,
                   status: HTTP_STATUS.UNAUTHORIZED
-                })
+                });
               }
-              ;(req as Request).decoded_refresh_token = decoded_refresh_token
+              (req as Request).decoded_refresh_token = decoded_refresh_token;
             } catch (error) {
               if (error instanceof JsonWebTokenError) {
                 throw new ErrorWithStatus({
                   message: capitalize((error as JsonWebTokenError).message),
                   status: HTTP_STATUS.UNAUTHORIZED
-                })
+                });
               }
-              throw error
+              throw error;
             }
-            return true
+            return true;
           }
         }
       }
     },
     ["body"]
   )
-)
+);
 
 export const emailVerifyTokenValidator = validate(
   checkSchema(
@@ -371,29 +371,29 @@ export const emailVerifyTokenValidator = validate(
               throw new ErrorWithStatus({
                 message: USERS_MESSAGES.EMAIL_VERIFY_TOKEN_IS_REQUIRED,
                 status: HTTP_STATUS.UNAUTHORIZED //401
-              })
+              });
             }
             try {
               //nếu có thì ta verify nó để có được thông tin của người dùng
               const decoded_email_verify_token = await verifyToken({
                 token: value,
                 secretOrPublicKey: process.env.JWT_SECRET_EMAIL_VERIFY_TOKEN as string
-              })
+              });
 
               //nếu có thì ta lưu decoded_email_verify_token vào req để khi nào muốn biết ai gửi req thì dùng
-              ;(req as Request).decoded_email_verify_token = decoded_email_verify_token
+              (req as Request).decoded_email_verify_token = decoded_email_verify_token;
 
               //lấy user_id từ decoded_email_verify_token để tìm user sở hữu
-              const user_id = decoded_email_verify_token.user_id
+              const user_id = decoded_email_verify_token.user_id;
               const user = await databaseService.users.findOne({
                 _id: new ObjectId(user_id)
-              })
+              });
 
               if (!user) {
                 throw new ErrorWithStatus({
                   message: USERS_MESSAGES.USER_NOT_FOUND,
                   status: HTTP_STATUS.NOT_FOUND //404
-                })
+                });
               }
 
               //TODO: nếu có user thì xem thử user đó đã verify chưa:
@@ -404,12 +404,12 @@ export const emailVerifyTokenValidator = validate(
               // }
 
               //TODO: nếu có user thì xem thử user này có bị banned không?
-              req.user = user //lưu lại xài
+              req.user = user; //lưu lại xài
               if (user.verify === UserVerifyStatus.Banned) {
                 throw new ErrorWithStatus({
                   message: USERS_MESSAGES.USER_BANNED,
                   status: HTTP_STATUS.FORBIDDEN
-                })
+                });
               }
 
               //TODO: nếu trong quá trình verify có xảy ra lỗi, user thực hiện resend, ta sẽ cấp cho một verify token mới và db sẽ update tương ứng
@@ -418,7 +418,7 @@ export const emailVerifyTokenValidator = validate(
                 throw new ErrorWithStatus({
                   message: USERS_MESSAGES.EMAIL_VERIFY_TOKEN_NOT_MATCH,
                   status: HTTP_STATUS.UNAUTHORIZED
-                })
+                });
               }
             } catch (error) {
               //trong middleware này ta throw để lỗi về default error handler xử lý
@@ -427,20 +427,20 @@ export const emailVerifyTokenValidator = validate(
                 throw new ErrorWithStatus({
                   message: capitalize((error as JsonWebTokenError).message),
                   status: HTTP_STATUS.UNAUTHORIZED //401
-                })
+                });
               }
               //còn nếu không phải thì ta sẽ trả về lỗi do ta throw ở trên try
-              throw error // này là lỗi đã tạo trên try
+              throw error; // này là lỗi đã tạo trên try
             }
 
-            return true //nếu không có lỗi thì trả về true
+            return true; //nếu không có lỗi thì trả về true
           }
         }
       }
     },
     ["body"]
   )
-)
+);
 
 export const forgotPasswordValidator = validate(
   checkSchema({
@@ -457,23 +457,23 @@ export const forgotPasswordValidator = validate(
           //tìm trong database xem có user nào sở hữu email = value của email người dùng gửi lên không
           const user = await databaseService.users.findOne({
             email: value
-          })
+          });
           //nếu không tìm được user thì nói user không tồn tại
           //khỏi tiến vào controller nữa
           if (!user) {
             throw new ErrorWithStatus({
               message: USERS_MESSAGES.USER_NOT_FOUND,
               status: HTTP_STATUS.NOT_FOUND
-            }) //422
+            }); //422
           }
           //đến đâu thì oke
-          req.user = user // lưu user mới tìm được lại luôn, khi nào cần thì xài
-          return true
+          req.user = user; // lưu user mới tìm được lại luôn, khi nào cần thì xài
+          return true;
         }
       }
     }
   })
-)
+);
 
 export const verifyForgotPasswordTokenValidator = validate(
   checkSchema(
@@ -487,7 +487,7 @@ export const verifyForgotPasswordTokenValidator = validate(
               throw new ErrorWithStatus({
                 message: USERS_MESSAGES.FORGOT_PASSWORD_TOKEN_IS_REQUIRED,
                 status: HTTP_STATUS.UNAUTHORIZED //401
-              })
+              });
             }
             //vào messages.ts thêm  FORGOT_PASSWORD_TOKEN_IS_REQUIRED: 'Forgot password token is required'
             //nếu có thì decode nó để lấy được thông tin của người dùng
@@ -495,22 +495,22 @@ export const verifyForgotPasswordTokenValidator = validate(
               const decoded_forgot_password_token = await verifyToken({
                 token: value,
                 secretOrPublicKey: process.env.JWT_SECRET_FORGOT_PASSWORD_TOKEN as string
-              })
+              });
               //lưu decoded_forgot_password_token vào req để khi nào muốn biết ai gửi req thì dùng
-              ;(req as Request).decoded_forgot_password_token = decoded_forgot_password_token
+              (req as Request).decoded_forgot_password_token = decoded_forgot_password_token;
               //vào type.d.ts thêm decoded_forgot_password_token?: TokenPayload cho Request
               //dùng user_id trong decoded_forgot_password_token để tìm user trong database
               //sẽ nhanh hơn là dùng forgot_password_token(value) để tìm user trong database
-              const { user_id } = decoded_forgot_password_token
+              const { user_id } = decoded_forgot_password_token;
               const user = await databaseService.users.findOne({
                 _id: new ObjectId(user_id)
-              })
+              });
               //nếu k tìm được user thì throw error
               if (user === null) {
                 throw new ErrorWithStatus({
                   message: USERS_MESSAGES.USER_NOT_FOUND,
                   status: HTTP_STATUS.UNAUTHORIZED //401
-                })
+                });
               }
               //nếu forgot_password_token đã được sử dụng rồi thì throw error
               //forgot_password_token truyền lên khác với forgot_password_token trong database
@@ -519,7 +519,7 @@ export const verifyForgotPasswordTokenValidator = validate(
                 throw new ErrorWithStatus({
                   message: USERS_MESSAGES.INVALID_FORGOT_PASSWORD_TOKEN,
                   status: HTTP_STATUS.UNAUTHORIZED //401
-                })
+                });
               }
               //trong messages.ts thêm   INVALID_FORGOT_PASSWORD_TOKEN: 'Invalid forgot password token'
             } catch (error) {
@@ -527,19 +527,19 @@ export const verifyForgotPasswordTokenValidator = validate(
                 throw new ErrorWithStatus({
                   message: capitalize((error as JsonWebTokenError).message),
                   status: HTTP_STATUS.UNAUTHORIZED //401
-                })
+                });
               }
-              throw error
+              throw error;
             }
 
-            return true
+            return true;
           }
         }
       }
     },
     ["body"]
   )
-)
+);
 
 export const resetPasswordValidator = validate(
   checkSchema(
@@ -549,10 +549,10 @@ export const resetPasswordValidator = validate(
     },
     ["body"]
   )
-)
+);
 
 export const verifiedUserValidator = (req: Request, res: Response, next: NextFunction) => {
-  const { verify } = req.decoded_authorization as TokenPayload
+  const { verify } = req.decoded_authorization as TokenPayload;
 
   if (verify !== UserVerifyStatus.Verified) {
     return next(
@@ -560,10 +560,10 @@ export const verifiedUserValidator = (req: Request, res: Response, next: NextFun
         message: USERS_MESSAGES.USER_NOT_VERIFIED,
         status: HTTP_STATUS.FORBIDDEN //tôi biết bạn là ai rồi nhưng bạn vẫn chưa được sử dụng dịch vụ
       })
-    )
+    );
   }
-  next()
-}
+  next();
+};
 
 export const updateMeValidator = validate(
   checkSchema(
@@ -642,4 +642,4 @@ export const updateMeValidator = validate(
     },
     ["body"]
   )
-)
+);

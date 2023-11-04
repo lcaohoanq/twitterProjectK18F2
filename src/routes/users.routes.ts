@@ -1,4 +1,4 @@
-import express from "express"
+import express from "express";
 import {
   accessTokenValidator,
   emailVerifyTokenValidator,
@@ -10,7 +10,7 @@ import {
   updateMeValidator,
   verifiedUserValidator,
   verifyForgotPasswordTokenValidator
-} from "~/middlewares/users.middlewares"
+} from "~/middlewares/users.middlewares";
 import {
   emailVerifyController,
   forgotPasswordController,
@@ -22,13 +22,13 @@ import {
   resetPasswordController,
   updateMeController,
   verifyForgotPasswordTokenController
-} from "~/controllers/users.controllers"
-import { registerController } from "~/controllers/users.controllers"
-import { wrapAsync } from "~/utils/handlers"
-import { filterMiddleware } from "~/middlewares/common.middlewares"
-import { UpdateMeReqBody } from "~/models/requests/User.requests"
+} from "~/controllers/users.controllers";
+import { registerController } from "~/controllers/users.controllers";
+import { wrapAsync } from "~/utils/handlers";
+import { filterMiddleware } from "~/middlewares/common.middlewares";
+import { UpdateMeReqBody } from "~/models/requests/User.requests";
 
-const usersRoute = express.Router()
+const usersRoute = express.Router();
 
 //middleWare
 //những middleware này ta chỉ demo xem như thế nào thôi
@@ -70,7 +70,7 @@ body: {email, password}
 */
 
 //*bọc lại wrapAsync
-usersRoute.get("/login", loginValidator, wrapAsync(loginController))
+usersRoute.get("/login", loginValidator, wrapAsync(loginController));
 
 //thêm 1 method post
 //giả vờ người dùng đưa ta một register hoàn hảo, không cần phải validate
@@ -95,7 +95,7 @@ body:{
 // usersRoute.post("/register", registerValidator, registerController)
 
 //ta tạm thời cất hàm registerController để demo cách thức hoạt động của Request Handler
-usersRoute.post("/register", registerValidator, wrapAsync(registerController))
+usersRoute.post("/register", registerValidator, wrapAsync(registerController));
 
 //!khi gặp lỗi ta không được throw ra, phải dồn tất cả lỗi về Error Handler
 //bổ sung next cho hàm đó
@@ -104,7 +104,7 @@ usersRoute.post("/register", registerValidator, wrapAsync(registerController))
 //ta sẽ đặt hàm xử lí lỗi này ở trên app tổng, đảm bảo tính reuse của nó cho toàn hệ thống
 
 //kiểm tra access, kiểm tra refresh, xoá
-usersRoute.post("/logout", accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController))
+usersRoute.post("/logout", accessTokenValidator, refreshTokenValidator, wrapAsync(logoutController));
 
 /* 
 route: verify-email
@@ -116,7 +116,7 @@ body: {
 tại sao ta không gửi lên at,rt vì người dùng có thể đăng kí bằng máy tính và dùng đt để verify
 */
 
-usersRoute.post("/verify-email", emailVerifyTokenValidator, wrapAsync(emailVerifyController))
+usersRoute.post("/verify-email", emailVerifyTokenValidator, wrapAsync(emailVerifyController));
 
 /*
 des:gửi lại verify email khi người dùng nhấn vào nút gửi lại email,
@@ -125,7 +125,7 @@ method: POST
 Header:{Authorization: Bearer <access_token>} //đăng nhập mới cho resend email verify
 body: {}
 */
-usersRoute.post("/resend-verify-email", accessTokenValidator, wrapAsync(resendEmailVerifyController))
+usersRoute.post("/resend-verify-email", accessTokenValidator, wrapAsync(resendEmailVerifyController));
 
 //vì người dùng sẽ truyền lên accesstoken, nên ta sẽ dùng lại accessTokenValidator để kiểm tra
 //accesstoken đó
@@ -144,7 +144,7 @@ method: POST
 Header: không cần, vì  ngta quên mật khẩu rồi, thì sao mà đăng nhập để có authen được
 body: {email: string}
 */
-usersRoute.post("/forgot-password", forgotPasswordValidator, wrapAsync(forgotPasswordController))
+usersRoute.post("/forgot-password", forgotPasswordValidator, wrapAsync(forgotPasswordController));
 
 /*
 des: Verify link in email to reset password
@@ -157,7 +157,7 @@ usersRoute.post(
   "/verify-forgot-password",
   verifyForgotPasswordTokenValidator,
   wrapAsync(verifyForgotPasswordTokenController)
-)
+);
 
 /*
 des: reset password
@@ -171,7 +171,7 @@ usersRoute.post(
   resetPasswordValidator,
   verifyForgotPasswordTokenValidator,
   wrapAsync(resetPasswordController)
-)
+);
 
 /*
 des: get profile của user
@@ -180,7 +180,7 @@ method: get
 Header: {Authorization: Bearer <access_token>}
 body: {}
 */
-usersRoute.get("/me", accessTokenValidator, wrapAsync(getMeController))
+usersRoute.get("/me", accessTokenValidator, wrapAsync(getMeController));
 
 /* 
 des: 
@@ -202,7 +202,7 @@ usersRoute.patch(
   ]),
   updateMeValidator,
   wrapAsync(updateMeController)
-)
+);
 
 /*
 des: get profile của user khác bằng unsername
@@ -210,7 +210,7 @@ path: '/:username'
 method: get
 không cần at,rt vì không cần đăng nhập cũng có thể xem thông tin của người khác
 */
-usersRoute.get("/:username", wrapAsync(getProfileController))
+usersRoute.get("/:username", wrapAsync(getProfileController));
 //chưa có controller getProfileController, nên bây giờ ta làm
 
-export default usersRoute
+export default usersRoute;

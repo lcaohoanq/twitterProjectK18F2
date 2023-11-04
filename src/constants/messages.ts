@@ -90,4 +90,4 @@ export const USERS_MESSAGES = {
   UPDATE_ME_SUCCESS: "Update me success",
 
   GET_PROFILE_SUCCESS: "Get profile success"
-} as const //để k ai chỉnh đc
+} as const; //để k ai chỉnh đc

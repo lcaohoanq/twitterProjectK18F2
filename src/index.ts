@@ -1,27 +1,27 @@
-import express, { Request, Response, NextFunction } from "express"
-import usersRoute from "./routes/users.routes"
+import express, { Request, Response, NextFunction } from "express";
+import usersRoute from "./routes/users.routes";
 
 // import { run } from './services/database.services'
-import databaseService from "./services/database.services"
-import { defaultErrorHandler } from "./middlewares/error.middlewares"
-databaseService.connect()
+import databaseService from "./services/database.services";
+import { defaultErrorHandler } from "./middlewares/error.middlewares";
+databaseService.connect();
 
-const app = express()
+const app = express();
 
 //app không hiểu mình log ra json
-app.use(express.json())
+app.use(express.json());
 
 //ta tách riêng userRoute, thằng chuyên quản lí các route liên quan user thành một file riêng
 //* const usersRoute = express.Router()
 
-const PORT = 3000
+const PORT = 3000;
 
 // run().catch(console.dir)
-databaseService.connect()
+databaseService.connect();
 
 app.get("/", (req, res) => {
-  res.send("Hello, đây là tầng đầu tiên API")
-})
+  res.send("Hello, đây là tầng đầu tiên API");
+});
 
 // //middleWare
 // usersRoute.use(
@@ -60,7 +60,7 @@ app.get("/", (req, res) => {
 //   })
 // })
 
-app.use("/users", usersRoute)
+app.use("/users", usersRoute);
 //localhost:3000/api/tweets/ test trong postman ra cục dữ liệu ở trên
 //usersRoute là thằng chuyên quản lí các user
 
@@ -75,9 +75,9 @@ app.use("/users", usersRoute)
 // })
 
 //chạy anh quản lí lỗi
-app.use(defaultErrorHandler)
+app.use(defaultErrorHandler);
 
 //!thằng này sẽ nằm cuối ứng dụng
 app.listen(PORT, () => {
-  console.log(`Server đang chạy trên PORT ${PORT}`)
-})
+  console.log(`Server đang chạy trên PORT ${PORT}`);
+});

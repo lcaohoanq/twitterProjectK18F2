@@ -54,6 +54,27 @@ export interface UpdateMeReqBody {
 }
 //vì đây là route patch nên ngta truyền thiếu 1 trong các prop trên cũng k sao
 
-export interface GetProfileReqParams {
+export interface GetProfileReqParams extends ParamsDictionary {
   username: string;
+}
+
+export interface FollowReqBody {
+  followed_user_id: string;
+}
+
+//thêm import
+import { ParamsDictionary } from "express-serve-static-core";
+//cho UnfollowReqParams kế thừa ParamsDictionary
+export interface UnfollowReqParams extends ParamsDictionary {
+  user_id: string;
+}
+
+export interface ChangePasswordReqBody {
+  old_password: string;
+  password: string;
+  confirm_password: string;
+}
+
+export interface RefreshTokenReqBody {
+  refresh_token: string;
 }

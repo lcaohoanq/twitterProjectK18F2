@@ -1,9 +1,16 @@
 import express, { Request, Response, NextFunction } from "express";
-import usersRoute from "./routes/users.routes";
+import usersRouter from "./routes/users.routes";
 
 // import { run } from './services/database.services'
 import databaseService from "./services/database.services";
 import { defaultErrorHandler } from "./middlewares/error.middlewares";
+import mediasRouter from "./routes/medias.routes";
+import { initFolder } from "./utils/file";
+import { config } from "dotenv";
+import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from "./constants/dir";
+import staticRouter from "./routes/static.routes";
+config();
+
 databaseService.connect();
 
 const app = express();
@@ -12,9 +19,12 @@ const app = express();
 app.use(express.json());
 
 //ta tách riêng userRoute, thằng chuyên quản lí các route liên quan user thành một file riêng
-//* const usersRoute = express.Router()
+//* const usersRouter = express.Router()
 
-const PORT = 3000;
+const PORT = process.env.PORT || 4000;
+
+// tạo folder uploads
+initFolder();
 
 // run().catch(console.dir)
 databaseService.connect();
@@ -24,7 +34,7 @@ app.get("/", (req, res) => {
 });
 
 // //middleWare
-// usersRoute.use(
+// usersRouter.use(
 //   (req, res, next) => {
 //     console.log('Time: ', Date.now())
 //     next()
@@ -50,7 +60,7 @@ app.get("/", (req, res) => {
 // )
 
 // //tách hàm để viết các method
-// usersRoute.get('/tweets', (req, res) => {
+// usersRouter.get('/tweets', (req, res) => {
 //   res.json({
 //     data: [
 //       { name: 'Điệp', yob: 1999 },
@@ -60,9 +70,9 @@ app.get("/", (req, res) => {
 //   })
 // })
 
-app.use("/users", usersRoute);
+app.use("/users", usersRouter);
 //localhost:3000/api/tweets/ test trong postman ra cục dữ liệu ở trên
-//usersRoute là thằng chuyên quản lí các user
+//usersRouter là thằng chuyên quản lí các user
 
 //localhost:3000/api log ra thời gian trong terminal
 //
@@ -73,6 +83,25 @@ app.use("/users", usersRoute);
 //   //không được ném 400
 //   res.status(err.status).json({ message: err.message })
 // })
+
+app.use("/medias", mediasRouter);
+
+/* // app.use(express.static(UPLOAD_IMAGE_DIR)) //static file handler
+//nếu viết như vậy thì link dẫn sẽ là localhost:4000/blablabla.jpg
+app.use("/static", express.static(UPLOAD_IMAGE_DIR)); //nếu muốn thêm tiền tố, ta sẽ làm thế này
+//vậy thì nghĩa là vào localhost:4000/static/blablabla.jpg
+
+databaseService.connect(); */
+
+//TODO: Ta demo
+
+// app.use('/static', express.static(UPLOAD_IMAGE_DIR)) //k dùng cách 1 nữa nên cmt
+
+// app.use("/static", staticRouter); //cách 2: ta tự độ chế
+
+// app.use("/static/video", express.static(UPLOAD_VIDEO_DIR)); //!streaming video -> fix lỗi chạy video trên chrome bằng đồ xài sẵn của express thay vì đồ tự chế
+
+app.use("/static/video-stream", express.static(UPLOAD_VIDEO_DIR)); //!streaming video -> fix lỗi chạy video trên chrome bằng đồ xài sẵn của express thay vì đồ tự chế
 
 //chạy anh quản lí lỗi
 app.use(defaultErrorHandler);

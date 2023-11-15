@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken"
-import { TokenPayload } from "~/models/requests/User.requests"
+import jwt from "jsonwebtoken";
+import { TokenPayload } from "~/models/requests/User.requests";
 
 //làm hàm nhận vào payload, privateKey, options từ đó ký tên
 //jwt.sign(payload, secretOrPrivateKey, [options, callback])
@@ -18,17 +18,17 @@ export const signToken = ({
   privateKey,
   options = { algorithm: "HS256" }
 }: {
-  payload: string | object | Buffer
-  privateKey: string
-  options: jwt.SignOptions
+  payload: string | object | Buffer;
+  privateKey: string;
+  options?: jwt.SignOptions;
 }) => {
   return new Promise<string>((resolve, reject) => {
     jwt.sign(payload, privateKey, options, (err, token) => {
-      if (err) throw reject(err)
-      resolve(token as string)
-    })
-  })
-}
+      if (err) throw reject(err);
+      resolve(token as string);
+    });
+  });
+};
 
 //ta có 2 cách để định nghĩa
 //khắc phục việc truyền 3 dữ liệu này thành một object
@@ -57,8 +57,8 @@ export const verifyToken = ({ token, secretOrPublicKey }: { token: string; secre
     //nếu token được tạo ra bằng secret|PublicKey thì ta dùng secret|PublicKey key để verify
     //từ đó biết rằng access_token được tạo bởi chính server
     jwt.verify(token, secretOrPublicKey, (error, decoded) => {
-      if (error) throw reject(error)
-      resolve(decoded as TokenPayload)
-    })
-  })
-}
+      if (error) throw reject(error);
+      resolve(decoded as TokenPayload);
+    });
+  });
+};

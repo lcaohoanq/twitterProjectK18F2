@@ -9,9 +9,15 @@ import { initFolder } from "./utils/file";
 import { config } from "dotenv";
 import { UPLOAD_IMAGE_DIR, UPLOAD_VIDEO_DIR } from "./constants/dir";
 import staticRouter from "./routes/static.routes";
+import { MongoClient } from "mongodb";
+import tweetsRouter from "./routes/tweets.routes";
 config();
 
-databaseService.connect();
+databaseService.connect().then(() => {
+  databaseService.indexUsers();
+  databaseService.indexRefreshTokens();
+  databaseService.indexFollowers();
+});
 
 const app = express();
 
@@ -102,6 +108,8 @@ databaseService.connect(); */
 // app.use("/static/video", express.static(UPLOAD_VIDEO_DIR)); //!streaming video -> fix lỗi chạy video trên chrome bằng đồ xài sẵn của express thay vì đồ tự chế
 
 app.use("/static/video-stream", express.static(UPLOAD_VIDEO_DIR)); //!streaming video -> fix lỗi chạy video trên chrome bằng đồ xài sẵn của express thay vì đồ tự chế
+
+app.use("/tweets", tweetsRouter); //route handler
 
 //chạy anh quản lí lỗi
 app.use(defaultErrorHandler);
